@@ -1,0 +1,207 @@
+import java.io.*;
+import java.util.*;
+
+class Animal {
+    private String name;
+    private int age;
+    private String species;
+
+    public Animal(String name, int age, String species) {
+        this.name = name;
+        this.age = age;
+        this.species = species;
+    }
+    
+    public String getName() { return name; }
+    public int getAge() { return age; }
+    public String getSpecies() { return species; }
+    
+    public void setName(String name) { this.name = name; }
+    public void setAge(int age) { this.age = age; }
+    public void setSpecies(String species) { this.species = species; }
+
+    @Override
+    public String toString() {
+        return name + ": age " + age + ", species " + species;
+    }
+}
+
+class Hyena extends Animal {
+    private String favoriteFood;
+
+    public Hyena(String name, int age, String favoriteFood) {
+        super(name, age, "Hyena");
+        this.favoriteFood = favoriteFood;
+    }
+
+    public String getFavoriteFood() { return favoriteFood; }
+
+    @Override
+    public String toString() {
+        return super.toString() + ", favorite food: " + favoriteFood;
+    }
+}
+
+class Lion extends Animal {
+    private boolean isAlpha;
+
+    public Lion(String name, int age, boolean isAlpha) {
+        super(name, age, "Lion");
+        this.isAlpha = isAlpha;
+    }
+
+    public boolean isAlpha() { return isAlpha; }
+
+    @Override
+    public String toString() {
+        return super.toString() + ", alpha: " + isAlpha;
+    }
+}
+
+class Tiger extends Animal {
+    private String stripeColor;
+
+    public Tiger(String name, int age, String stripeColor) {
+        super(name, age, "Tiger");
+        this.stripeColor = stripeColor;
+    }
+
+    public String getStripeColor() { return stripeColor; }
+
+    @Override
+    public String toString() {
+        return super.toString() + ", stripe color: " + stripeColor;
+    }
+}
+
+class Bear extends Animal {
+    private double weight;
+
+    public Bear(String name, int age, double weight) {
+        super(name, age, "Bear");
+        this.weight = weight;
+    }
+
+    public double getWeight() { return weight; }
+
+    @Override
+    public String toString() {
+        return super.toString() + ", weight: " + weight + "kg";
+    }
+}
+
+public class ZooApp {
+    public static void main(String[] args) {
+        List<Animal> animals = new ArrayList<>();
+        
+        Map<String, Integer> speciesCount = new HashMap<>();
+        
+        String arrivingAnimalsPath = "arrivingAnimals.txt";
+        String animalNamesPath = "animalNames.txt";
+        String newAnimalsReportPath = "newAnimals.txt";
+
+        try {
+            readAnimalData(arrivingAnimalsPath, animals, speciesCount);
+            
+            readAndUpdateNames(animalNamesPath, animals);
+            
+            writeAnimalReport(newAnimalsReportPath, animals, speciesCount);
+
+            System.out.println("Animal data processed successfully. Report written to: " + newAnimalsReportPath);
+        } catch (IOException e) {
+            System.err.println("Error in file processing: " + e.getMessage());
+        }
+    }
+    
+    private static void readAnimalData(String filePath, List<Animal> animals, Map<String, Integer> speciesCount) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(filePath));
+        String line;
+
+        while ((line = reader.readLine()) != null) {
+            String[] parts = line.split(",");
+
+            if (parts.length < 3) {
+                System.err.println("Skipping invalid entry: " + line);
+                continue;
+            }
+
+            String name = parts[0].trim();
+            int age = Integer.parseInt(parts[1].trim());
+            String species = parts[2].trim();
+
+            Animal animal;
+            switch (species.toLowerCase()) {
+                case "hyena":
+                    String favoriteFood = parts[3].trim();
+                    animal = new Hyena(name, age, favoriteFood);
+                    break;
+                case "lion":
+                    boolean isAlpha = Boolean.parseBoolean(parts[3].trim());
+                    animal = new Lion(name, age, isAlpha);
+                    break;
+                case "tiger":
+                    String stripeColor = parts[3].trim();
+                    animal = new Tiger(name, age, stripeColor);
+                    break;
+                case "bear":
+                    double weight = Double.parseDouble(parts[3].trim());
+                    animal = new Bear(name, age, weight);
+                    break;
+                default:
+                    System.err.println("Unknown species: " + species);
+                    continue; 
+            }
+
+            animals.add(animal);
+            speciesCount.put(species, speciesCount.getOrDefault(species, 0) + 1);
+        }
+
+        reader.close();
+    }
+    
+    private static void readAndUpdateNames(String filePath, List<Animal> animals) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(filePath));
+        String line;
+
+        int i = 0;
+        while ((line = reader.readLine()) != null && i < animals.size()) {
+            animals.get(i).setName(line.trim());
+            i++;
+        }
+
+        reader.close();
+    }
+    
+    private static void writeAnimalReport(String filePath, List<Animal> animals, Map<String, Integer> speciesCount) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(filePath));
+        
+        for (Animal animal : animals) {
+            writer.write(animal + System.lineSeparator());
+        }
+
+        writer.write("\nSpecies Count:\n");
+        for (Map.Entry<String, Integer> entry : speciesCount.entrySet()) {
+            writer.write(entry.getKey() + ": " + entry.getValue() + System.lineSeparator());
+        }
+
+        writer.close();
+    }
+}
+
+
+
+
+
+
+Shenzi: age 4, species Hyena, favorite food: meat
+Mufasa: age 6, species Lion, alpha: true
+Raja: age 7, species Tiger, stripe color: orange-black
+Koda: age 10, species Bear, weight: 200.5kg
+
+
+
+Species Count:
+Hyena: 1
+Lion: 1
+Tiger: 1
+Bear: 1
